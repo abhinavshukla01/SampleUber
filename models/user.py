@@ -13,9 +13,9 @@ class Login(BaseModel):
     password: str
 
 class User(BaseModel):
-    full_name = str
-    mobile = int
-    email = EmailStr
+    fullName: str
+    mobile:  int
+    email:  EmailStr
     username: str
     password:str
     confirm_password: str
