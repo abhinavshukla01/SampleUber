@@ -8,6 +8,6 @@ app = FastAPI()
 
 app.include_router(routes.router)
 
-@app.get("/welcome")
+@app.get("/")
 def welcome(get_current_user: User = Depends(get_current_user)):
     return {"message": "Welcome to Our App!!"}

@@ -15,16 +15,15 @@ def createUser(request:User):
         return {"message" :"Password doesn't match!!"}
     hashedPassword = pwd_context.hash(request.password)
     logger.debug("Password Hashed")
-    newUser = {"username":request.username,
-                "password":hashedPassword,
-                "confirm_password":hashedPassword}
+    # newUser = {"username":request.username,
+    #             "password":hashedPassword,
+    #             "confirm_password":hashedPassword
+    #             }
+    newUser = request.dict()
     logger.debug("User created")
     col.insert_one(newUser)
     logger.debug("User Inserted in DB")
     return {"message": "User Created Successfully"}
-
-
-
 
 
 @router.post("/login")
