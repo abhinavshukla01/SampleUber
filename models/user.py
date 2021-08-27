@@ -14,8 +14,17 @@ class Login(BaseModel):
 
 class User(BaseModel):
     fullName: str
-    mobile:  int
+    mobile:  str
     email:  EmailStr
     username: str
     password:str
     confirm_password: str
+
+class Driver(BaseModel):
+    fullName: str
+    mobile:  str
+    email:  EmailStr
+    username: str
+    password:str
+    vehicleDetails: str
+    registrationNumber: str
