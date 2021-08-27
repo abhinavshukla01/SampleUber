@@ -19,16 +19,10 @@ def Register(request:User):
         return {"message" :"Password doesn't match!!"}
     hashedPassword = pwd_context.hash(request.password)
     logger.debug("Password Hashed")
-    newUser = {
-        "fullName": request.fullName,
-        "mobile": request.mobile,
-        "email": request.email,
-        "username": request.username,
-        "password": hashedPassword,
-        "confirm_password": hashedPassword
-}
+    request.password = hashedPassword
+    request.confirm_password = hashedPassword
     logger.debug("User created")
-    col.insert_one(newUser)
+    col.insert_one(request.dict())
     logger.debug("User Inserted in DB")
     return {"message": "User Created Successfully"}
 
