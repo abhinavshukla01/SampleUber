@@ -1,17 +1,5 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from fastapi import Body
-
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class Login(BaseModel):
-    username: str
-    password: str
 
 class User(BaseModel):
     fullName: str
@@ -19,4 +7,9 @@ class User(BaseModel):
     email:  EmailStr
     username: str
     password:str
+
+class UserIn(User):
     confirm_password: str
+
+class UserInDB(User):
+    pass

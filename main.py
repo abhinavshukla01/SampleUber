@@ -1,14 +1,14 @@
 import routes
-from auth import get_current_user
-from models.user import User
-from fastapi import FastAPI, Depends
+import driver
+from fastapi import FastAPI
 
 
-app = FastAPI()
+app = FastAPI(title="SampleUber")
 
 app.include_router(routes.router)
+app.include_router(driver.router)
 
-@app.get("/")
+@app.get("/", tags=["Welcome"])
 def welcome():
     return {"message": "Welcome to Our App!!"}
 
