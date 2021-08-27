@@ -1,10 +1,8 @@
-from fastapi import FastAPI,status, Depends, HTTPException, APIRouter
+from fastapi import status, Depends, HTTPException, APIRouter
 from fastapi.param_functions import Body
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
-from pydantic.errors import UrlSchemeError
-from auth import get_current_user
-from models.user import Login, User, Driver
+from models.user import Driver, DriverInDB
 from database import driverCol
 from helper import create_access_token, verify_password, timedelta, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, pwd_context
 
@@ -12,18 +10,19 @@ router = APIRouter(prefix="/driver",tags=["Driver"])
 
 
 @router.post("/register")
-def register(*,request:Driver,confirmPassword:str=Body(...)):
+def register(*,request:Driver):
     username_in_db = driverCol.find_one({"username":request.username})
     if username_in_db:
         return {"message" : "Username is already taken!!"}
-    if request.password != confirmPassword:
+    if request.password != request.confirmPassword:
         return {"message" :"Password doesn't match!!"}
     if len(request.registrationNumber) != 10:
         return {"message" : "Registration number is invalid, if should contain 10 characters"}
     hashedPassword = pwd_context.hash(request.password)
     request.password = hashedPassword
     logger.debug("Password Hashed")
-    driverCol.insert_one(request.dict())
+    driverInDB=DriverInDB(**request.dict())
+    driverCol.insert_one(driverInDB.dict())
     logger.debug("User Inserted in DB")
     return {"message": "User Created Successfully"}
 

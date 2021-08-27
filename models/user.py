@@ -20,7 +20,7 @@ class User(BaseModel):
     password:str
     confirm_password: str
 
-class Driver(BaseModel):
+class DriverInDB(BaseModel):
     fullName: str
     mobile:  str
     email:  EmailStr
@@ -28,3 +28,6 @@ class Driver(BaseModel):
     password:str
     vehicleDetails: str
     registrationNumber: str
+
+class Driver(DriverInDB):
+    confirmPassword: str
