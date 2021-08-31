@@ -2,28 +2,26 @@ from fastapi import FastAPI,status, Depends, HTTPException, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from loguru import logger
 from pydantic.errors import UrlSchemeError
-from auth import get_current_user
-from models.user import UserIn, UserInDB
-from models.login import Login
-from database import col
-from helper import create_access_token, verify_password, timedelta, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, pwd_context
+from dependencies import get_current_user,create_access_token,verify_password
+from models.user import User,UserInDB
+from utils.db import col
+from datetime import datetime, timedelta 
+from utils.security import ALGORITHM,ACCESS_TOKEN_EXPIRE_MINUTES,pwd_context
 
-router = APIRouter(prefix="/user",tags=["Users"])
-
+router = APIRouter(prefix="/user",tags=["User"])
 
 @router.post("/register")
-def Register(request:UserIn):
+def register(request:User):
     username_in_db = col.find_one({"username":request.username})
     if username_in_db:
         return {"message" : "Username is already taken!!"}
-    if request.password != request.confirm_password:
+    if request.password != request.confirmPassword:
         return {"message" :"Password doesn't match!!"}
     hashedPassword = pwd_context.hash(request.password)
     logger.debug("Password Hashed")
-    request.password = hashedPassword
+    request.password=hashedPassword
+    newUser=UserInDB(**request.dict())
     logger.debug("User created")
-    newUser = UserInDB(**request.dict())
-    logger.debug(newUser)
     col.insert_one(newUser.dict())
     logger.debug("User Inserted in DB")
     return {"message": "User Created Successfully"}

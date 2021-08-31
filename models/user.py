@@ -1,6 +1,16 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import EmailStr
+from .login import Login
 
+<<<<<<< HEAD
+class UserInDB(Login):
+    firstName: str
+    lastName: str
+    mobileNumber: str
+    emailId: EmailStr
+
+class User(UserInDB):
+    confirmPassword: str
+=======
 class User(BaseModel):
     fullName: str
     mobile: int 
@@ -13,3 +23,4 @@ class UserIn(User):
 
 class UserInDB(User):
     pass
+>>>>>>> 80ffbe90bd239538b9c647ab2328d3e188451168

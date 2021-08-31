@@ -2,12 +2,20 @@ from fastapi import status, Depends, HTTPException, APIRouter
 from fastapi.param_functions import Body
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
+<<<<<<< HEAD:routers/DriverApi.py
+from models.driver import Driver, DriverInDB
+from utils.db import driverCol
+from dependencies import get_current_user,create_access_token,verify_password
+from datetime import datetime, timedelta
+from utils.security import ALGORITHM,ACCESS_TOKEN_EXPIRE_MINUTES,pwd_context
+=======
 from models.driverModel import Driver, DriverInDB
 from database import driverCol
 from helper import create_access_token, verify_password, timedelta, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, pwd_context
+>>>>>>> 80ffbe90bd239538b9c647ab2328d3e188451168:driver.py
+
 
 router = APIRouter(prefix="/driver",tags=["Driver"])
-
 
 @router.post("/register")
 def register(*,request:Driver):
