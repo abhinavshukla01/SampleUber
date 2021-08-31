@@ -1,15 +1,11 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import EmailStr
+from .login import Login
 
-class User(BaseModel):
-    fullName: str
-    mobile: int 
-    email:  EmailStr
-    username: str
-    password:str
+class UserInDB(Login):
+    firstName: str
+    lastName: str
+    mobileNumber: int
+    emailId: EmailStr
 
-class UserIn(User):
-    confirm_password: str
-
-# class UserInDB(User):
-#     pass
+class User(UserInDB):
+    confirmPassword: str
