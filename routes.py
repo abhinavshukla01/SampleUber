@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from loguru import logger
 from pydantic.errors import UrlSchemeError
 from auth import get_current_user
-from models.user import UserIn, UserInDB
+from models.user import UserIn, User
 from models.login import Login
 from database import col
 from helper import create_access_token, verify_password, timedelta, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, pwd_context
@@ -22,7 +22,7 @@ def Register(request:UserIn):
     logger.debug("Password Hashed")
     request.password = hashedPassword
     logger.debug("User created")
-    newUser = UserInDB(**request.dict())
+    newUser = User(**request.dict())
     logger.debug(newUser)
     col.insert_one(newUser.dict())
     logger.debug("User Inserted in DB")

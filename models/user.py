@@ -11,5 +11,5 @@ class User(BaseModel):
 class UserIn(User):
     confirm_password: str
 
-class UserInDB(User):
-    pass
+# class UserInDB(User):
+#     pass
