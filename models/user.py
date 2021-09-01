@@ -1,4 +1,5 @@
 from pydantic import EmailStr
+from pydantic.main import BaseModel
 from .login import Login
 
 class UserInDB(Login):
@@ -9,3 +10,8 @@ class UserInDB(Login):
 
 class User(UserInDB):
     confirmPassword: str
+
+class PasswordModel(BaseModel):
+    oldPassword: str
+    newPassword: str
+    confirm_NewPassword: str

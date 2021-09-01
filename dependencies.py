@@ -9,6 +9,8 @@ from jose import JWTError, jwt
 from utils.token import Token,TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/login")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/change-password")
+
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
