@@ -1,17 +1,9 @@
-from pydantic import EmailStr
-from pydantic.main import BaseModel
-from .login import Login
+from models.base import BaseUser
 
-class UserInDB(Login):
-    firstName: str
-    lastName: str
-    mobileNumber: int
-    emailId: EmailStr
 
-class User(UserInDB):
+class UserInput(BaseUser):
+    password: str
     confirmPassword: str
 
-class PasswordModel(BaseModel):
-    oldPassword: str
-    newPassword: str
-    confirm_NewPassword: str
+class UpdateUser(BaseUser):
+    pass

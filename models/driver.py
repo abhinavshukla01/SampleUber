@@ -1,8 +1,9 @@
-from .user import UserInDB
+from models.base import BaseDriver
 
-class DriverInDB(UserInDB):
-    vehicleDetails: str
-    registrationNumber: str
 
-class Driver(DriverInDB):
+class DriverInput(BaseDriver):
+    password: str
     confirmPassword: str
+
+class UpdateDriver(BaseDriver):
+    pass
