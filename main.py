@@ -12,5 +12,5 @@ app.include_router(driverRouter)
 app.include_router(baseRouter)
 
 @app.get("/", tags=["Welcome"])
-def welcome(get_user:BaseUser = Depends(get_current_user)):
+def welcome():
     return {"message": "Welcome to our app!!"}

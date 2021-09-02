@@ -1,14 +1,17 @@
 from fastapi import status, Depends, HTTPException, APIRouter
+from fastapi.encoders import jsonable_encoder
 from fastapi.param_functions import Body
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from models.driver import DriverInput
 from models.base import BasePassword, BaseDriver
-from utils.db import driverCol, passwordCol
+from utils.db import driverCol, passwordCol,rideCol
 from dependencies import get_current_user,create_access_token,verify_password
 from datetime import datetime, timedelta
 from utils.security import ALGORITHM,ACCESS_TOKEN_EXPIRE_MINUTES,pwd_context
-
+from bson.json_util import dumps, loads, CANONICAL_JSON_OPTIONS
+from fastapi.responses import JSONResponse
+import re
 
 router = APIRouter(prefix="/driver",tags=["Driver"])
 
@@ -31,3 +34,9 @@ def register(request:DriverInput):
     passwordCol.insert_one(newPassword.dict())
     return {"message": "User Created Successfully"}
        
+@router.get("/all-requests")
+def allRequests():
+    req = rideCol.find({})
+    list_cur = list(req)
+    json_data = dumps(list_cur)
+    return loads(json_data)
