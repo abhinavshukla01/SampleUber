@@ -1,4 +1,5 @@
-from fastapi import status, Depends, HTTPException, APIRouter
+from typing import Optional
+from fastapi import status, Depends, HTTPException, APIRouter, BackgroundTasks
 from fastapi.encoders import jsonable_encoder
 from fastapi.param_functions import Body
 from fastapi.security import OAuth2PasswordRequestForm
@@ -9,9 +10,10 @@ from utils.db import driverCol, passwordCol,rideCol
 from dependencies import get_current_user,create_access_token,verify_password
 from datetime import datetime, timedelta
 from utils.security import ALGORITHM,ACCESS_TOKEN_EXPIRE_MINUTES,pwd_context
-from bson.json_util import dumps, loads, CANONICAL_JSON_OPTIONS
+from bson.json_util import dumps, CANONICAL_JSON_OPTIONS, loads
 from fastapi.responses import JSONResponse
-import re
+import pyotp
+import pyautogui as pag
 
 router = APIRouter(prefix="/driver",tags=["Driver"])
 
@@ -38,5 +40,24 @@ def register(request:DriverInput):
 def allRequests():
     req = rideCol.find({})
     list_cur = list(req)
+    for i in list_cur:
+        i.pop("_id")
     json_data = dumps(list_cur)
+    logger.debug(json_data)
     return loads(json_data)
+
+
+
+@router.get("/accept-request")
+def acceptRequest(request: Optional[int]=None):
+    totp = pyotp.TOTP('base32secret3232')
+    otp = totp.now()
+    logger.debug(type(otp))
+    print(otp)
+    if  request:
+        pag.alert(text=otp)
+        otp_in = pag.prompt('Enter OTP')
+        return {"status": "Accepted","otp verified": otp==otp_in}
+    else:
+        return {"status": "Declined by driver"}
+
