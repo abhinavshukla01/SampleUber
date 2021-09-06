@@ -1,6 +1,7 @@
 from pydantic import EmailStr
 from pydantic.main import BaseModel
 from enum import Enum
+from datetime import time
 
 class BaseUser(BaseModel):
     username: str
@@ -25,3 +26,39 @@ class PasswordModel(BaseModel):
 class UserType(str, Enum):
     user = "user"
     driver = "driver"
+
+class RideStatus(str, Enum):
+    RIDE_REQUESTED = "RIDE_REQUESTED"
+    ACCEPTED = "ACCEPTED"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    DRIVER_DECLINED = "DRIVER_DECLINED"
+    USER_DECLINED = "USER_DECLINED"
+
+class AcceptDecline(str,Enum):
+    ACCEPT = "ACCEPTED"
+    DECLINE = "DECLINED"
+
+class RideInput(BaseModel):
+    userId: str
+    sourceLocation: str
+    destinationLocation: str
+
+class RideHistory(RideInput):
+    driverId: str = ""
+    fare: float = 0.0
+    startTime: time = None
+    endTime: time = None
+    distance: float = 0.0
+    otp: int = None
+    status: RideStatus = None
+
+class Rides():
+    rideId: str
+    userId: str
+    driverId: str = None
+
+class Ratings():
+    rideId: str
+    driverRating: int
+    userRating: int

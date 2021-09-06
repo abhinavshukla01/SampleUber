@@ -1,21 +1,14 @@
-from random import randint
+from models.base import RideHistory, RideInput, BaseUser, PasswordModel, BasePassword
+from models.user import BaseUser, UpdateUser, UserInput
 from time import sleep
-from bson.objectid import ObjectId
-from pydantic.types import ConstrainedBytes
-from pymongo.message import _randint
-from models.base import BaseUser, PasswordModel
 from fastapi import FastAPI,status, Depends, HTTPException, APIRouter, BackgroundTasks
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from loguru import logger
 from pydantic.errors import UrlSchemeError
 from dependencies import get_current_user,create_access_token,verify_password
-from models.user import BaseUser, UpdateUser, UserInput
-from models.base import BasePassword
-from utils.db import col, passwordCol,rideCol
-from datetime import datetime, timedelta 
+from utils.db import col, passwordCol, rideCol, rideHistoryCol
 from utils.security import ALGORITHM,ACCESS_TOKEN_EXPIRE_MINUTES,pwd_context
-import requests
-import json
+import random
 
 router = APIRouter(prefix="/user",tags=["User"])
 
@@ -55,11 +48,16 @@ def updateUser(username:str, user:UpdateUser):
     if update_status:
         return {"message": update_status}
 
-@router.get("/search-cab")
-def searchCab(username: str, source: str, desitination:str):
-    cab = {"distance": randint(2,10),
-            "price":randint(50,100),
-            "username": username,
-            "driver":"d"}
-    rideCol.insert_one(cab)
+@router.post("/search-cab")
+def searchCab(request: RideInput):
+    userId = str(col.find_one({"username":request.userId})["_id"])
+    rideRequest=RideHistory(**request.dict())
+    rideRequest.userId=userId
+    rideRequest.driverId='d'
+    rideRequest.distance=round(random.random()*10,2)
+    rideRequest.fare=round(random.random()*100,2)
+    rideRequest.status="RIDE_REQUESTED"
+    ride_id = rideHistoryCol.insert_one(rideRequest.dict()).inserted_id
+    ride={"rideId":str(ride_id), "userId":userId, "driverId":rideRequest.driverId}
+    rideCol.insert_one(ride)
     return {"message": "Success"}

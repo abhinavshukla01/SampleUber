@@ -1,3 +1,4 @@
+from models.base import RideHistory
 from typing import Optional
 from fastapi import status, Depends, HTTPException, APIRouter, BackgroundTasks
 from fastapi.encoders import jsonable_encoder
@@ -5,12 +6,13 @@ from fastapi.param_functions import Body
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from models.driver import DriverInput
-from models.base import BasePassword, BaseDriver
-from utils.db import driverCol, passwordCol,rideCol
+from models.base import BasePassword, BaseDriver, AcceptDecline
+from utils.db import driverCol, passwordCol,rideCol,rideHistoryCol
 from dependencies import get_current_user,create_access_token,verify_password
 from datetime import datetime, timedelta
 from utils.security import ALGORITHM,ACCESS_TOKEN_EXPIRE_MINUTES,pwd_context
 from bson.json_util import dumps, CANONICAL_JSON_OPTIONS, loads
+from bson.objectid import ObjectId
 from fastapi.responses import JSONResponse
 import pyotp
 import pyautogui as pag
@@ -35,29 +37,33 @@ def register(request:DriverInput):
                                 "password":hashedPassword})
     passwordCol.insert_one(newPassword.dict())
     return {"message": "User Created Successfully"}
-       
-@router.get("/all-requests")
-def allRequests():
-    req = rideCol.find({})
+
+
+@router.get("/ride-requests")
+def rideRequests(username:str):
+    #driverId = str(driverCol.find_one({"username":username})["_id"])
+    driverId="d"
+    req = rideHistoryCol.find({"driverId":driverId})
     list_cur = list(req)
     for i in list_cur:
-        i.pop("_id")
+        i["_id"]=str(i["_id"])
     json_data = dumps(list_cur)
-    logger.debug(json_data)
     return loads(json_data)
 
 
-
 @router.get("/accept-request")
-def acceptRequest(request: Optional[int]=None):
-    totp = pyotp.TOTP('base32secret3232')
-    otp = totp.now()
-    logger.debug(type(otp))
-    print(otp)
-    if  request:
-        pag.alert(text=otp)
-        otp_in = pag.prompt('Enter OTP')
-        return {"status": "Accepted","otp verified": otp==otp_in}
-    else:
-        return {"status": "Declined by driver"}
+def acceptRequest(rideId: str,status : AcceptDecline):
+    if status == "ACCEPTED":
+        totp = pyotp.TOTP('base32secret3232')
+        otp = totp.now()
+        rideHistoryCol.update({"_id":ObjectId(rideId)}, {"$set":{"otp":int(otp),"status":"ACCEPTED"}})
+    elif status == "DECLINED":
+        up=rideHistoryCol.update({"_id":ObjectId(rideId)}, {"$set":{"status":"DRIVER_DECLINED"}})
+    
+    pag.alert(text=status.value)
+    return {"message": "Updated"}
+    #alert(text='', title='', button='OK')
+    # otp_in = pag.prompt('Enter OTP')
+    # return {"status": "Accepted","otp verified": otp==otp_in}
+    # return {"status": "Declined by driver"}
 
