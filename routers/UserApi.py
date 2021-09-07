@@ -1,3 +1,4 @@
+from fastapi.param_functions import Query
 from models.response import RideOutput
 from models.base import RideHistory, RideInput, BaseUser, PasswordModel, BasePassword
 from models.user import BaseUser, UpdateUser, UserInput

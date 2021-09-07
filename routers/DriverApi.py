@@ -84,7 +84,7 @@ def startRide(otp: int, rideId: str):
         return {"message": "Incorrect OTP"}
 
 @router.patch("/end-ride")
-def startRide(rideId: str):
+def endRide(rideId: str):
     req = rideHistoryCol.find_one({"_id":ObjectId(rideId)})
     up = rideHistoryCol.update({"_id":ObjectId(rideId)},{"$set":{"status":"COMPLETED","endTime":datetime.now()}})
     return up 
