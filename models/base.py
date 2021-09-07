@@ -44,8 +44,9 @@ class RideInput(BaseModel):
     sourceLocation: str
     destinationLocation: str
 
-class RideHistory(RideInput):
-    driverId: str = ""
+class RideHistory(BaseModel):
+    sourceLocation: str
+    destinationLocation: str
     fare: float = 0.0
     startTime: time = None
     endTime: time = None

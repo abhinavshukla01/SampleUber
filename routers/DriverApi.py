@@ -43,12 +43,19 @@ def register(request:DriverInput):
 def rideRequests(username:str):
     #driverId = str(driverCol.find_one({"username":username})["_id"])
     driverId="d"
-    req = rideHistoryCol.find({"driverId":driverId})
-    list_cur = list(req)
-    for i in list_cur:
-        i["_id"]=str(i["_id"])
-    json_data = dumps(list_cur)
-    return loads(json_data)
+    rideIds = rideCol.find({"driverId":driverId})
+    op=[]
+    for ride in rideIds:
+        req = rideHistoryCol.find_one({"_id":ObjectId(ride["rideId"])})
+        #logger.debug(req)
+        req["_id"]=str(req["_id"])
+        op.append(req)
+    return op
+    # list_cur = list(req)
+    # for i in list_cur:
+    #     i["_id"]=str(i["_id"])
+    # json_data = dumps(list_cur)
+    # return loads(json_data)
 
 
 @router.get("/accept-request")
