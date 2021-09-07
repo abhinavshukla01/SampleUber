@@ -1,7 +1,7 @@
 from pydantic import EmailStr
 from pydantic.main import BaseModel
 from enum import Enum
-from datetime import time
+from datetime import datetime
 
 class BaseUser(BaseModel):
     username: str
@@ -44,11 +44,14 @@ class RideHistory(BaseModel):
     sourceLocation: str
     destinationLocation: str
     fare: float = 0.0
-    startTime: time = None
-    endTime: time = None
+    startTime: datetime = None
+    endTime: datetime = None
     distance: float = 0.0
     otp: int = None
     status: RideStatus = None
+
+class RideHistoryOutput(RideHistory):
+    rideId: str
 
 class Rides():
     rideId: str

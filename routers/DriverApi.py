@@ -1,12 +1,12 @@
 from models.base import RideHistory
-from typing import Optional
+from typing import Optional,List
 from fastapi import status, Depends, HTTPException, APIRouter, BackgroundTasks, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.param_functions import Body
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from models.driver import DriverInput
-from models.base import BasePassword, BaseDriver
+from models.base import BasePassword, BaseDriver, RideHistoryOutput
 from utils.db import driverCol, passwordCol,rideCol,rideHistoryCol
 from dependencies import get_current_user,create_access_token,verify_password
 from datetime import datetime, timedelta
@@ -39,7 +39,7 @@ def register(request:DriverInput):
     return {"message": "User Created Successfully"}
 
 
-@router.get("/ride-requests")
+@router.get("/ride-requests",response_model=List[RideHistoryOutput])
 def rideRequests(username:str):
     driverId = str(driverCol.find_one({"username":username})["_id"])
     #driverId=""
@@ -48,7 +48,7 @@ def rideRequests(username:str):
     for ride in rideIds:
         req = rideHistoryCol.find_one({"_id":ObjectId(ride["rideId"])})
         #logger.debug(req)
-        req["_id"]=str(req["_id"])
+        req["rideId"]=str(req["_id"])
         op.append(req)
     return op
     # list_cur = list(req)
@@ -63,9 +63,9 @@ def acceptRequest(rideId: str,status : str = Query("...",enum=["ACCEPTED","DECLI
     if status == "ACCEPTED":
         totp = pyotp.TOTP('base32secret3232')
         otp = totp.now()
-        rideHistoryCol.update({"_id":ObjectId(rideId)}, {"$set":{"otp":int(otp),"status":"ACCEPTED"}})
+        rideHistoryCol.update({"_id":ObjectId(rideId)}, {"$set":{"otp":int(otp),"status":"ACCEPTED","lastModified":datetime.now()}})
     elif status == "DECLINED":
-        up=rideHistoryCol.update({"_id":ObjectId(rideId)}, {"$set":{"status":"DRIVER_DECLINED"}})
+        up=rideHistoryCol.update({"_id":ObjectId(rideId)}, {"$set":{"status":"DRIVER_DECLINED","lastModified":datetime.now()}})
     
     pag.alert(text=status)
     return {"message": "Updated"}
@@ -78,7 +78,7 @@ def acceptRequest(rideId: str,status : str = Query("...",enum=["ACCEPTED","DECLI
 def startRide(otp: int, rideId: str):
     req = rideHistoryCol.find_one({"_id":ObjectId(rideId)})
     if otp == req["otp"]:
-        up = rideHistoryCol.update({"_id":ObjectId(rideId)},{"$set":{"status":"IN_PROGRESS","startTime":datetime.now()}})
+        up = rideHistoryCol.update({"_id":ObjectId(rideId)},{"$set":{"status":"IN_PROGRESS","startTime":datetime.now(),"lastModified":datetime.now()}})
         return up 
     else:
         return {"message": "Incorrect OTP"}
@@ -86,7 +86,7 @@ def startRide(otp: int, rideId: str):
 @router.patch("/end-ride")
 def endRide(rideId: str):
     req = rideHistoryCol.find_one({"_id":ObjectId(rideId)})
-    up = rideHistoryCol.update({"_id":ObjectId(rideId)},{"$set":{"status":"COMPLETED","endTime":datetime.now()}})
+    up = rideHistoryCol.update({"_id":ObjectId(rideId)},{"$set":{"status":"COMPLETED","endTime":datetime.now(),"lastModified":datetime.now()}})
     return up 
     
 

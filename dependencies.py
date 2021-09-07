@@ -60,3 +60,10 @@ def verify_password(plain_password, hashed_password):
 def getPassword(userid):
     pwd = passwordCol.find_one({"userId": str(userid)})
     return pwd["password"]
+
+
+def addTimeStamp(obj: dict):
+    obj["lastModified"]=datetime.now()
+    if "createdOn" not in obj.keys():
+        obj["createdOn"]=obj["lastModified"]
+    return obj

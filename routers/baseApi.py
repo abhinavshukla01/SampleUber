@@ -5,7 +5,7 @@ from fastapi import FastAPI,status, Depends, HTTPException, APIRouter,Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dependencies import getPassword, get_current_user,create_access_token,verify_password
 from utils.db import col, passwordCol,driverCol
-from datetime import timedelta 
+from datetime import datetime, timedelta 
 from utils.security import ACCESS_TOKEN_EXPIRE_MINUTES, pwd_context
 
 
@@ -52,14 +52,18 @@ def updateUser(username:str, user:UpdateUser, userType:str = Query("...",enum=["
         cur = col
     elif userType == "Driver":
         cur = driverCol
-    dataInDB = cur.find_one({"username":username})   
-    if len(str(user.mobileNumber)) != 10:
-        return {"message" : "Mobile number is invalid, it should contain 10 characters"}
+    dataInDB = cur.find_one({"username":username})
+    userModel=BaseUser(**dataInDB)
+    updatedDetails= user.dict(exclude_defaults=True)   
+    updateUserModel=userModel.copy(update=updatedDetails)
+    #if len(str(user.mobileNumber)) != 10:
+    #    return {"message" : "Mobile number is invalid, it should contain 10 characters"}
     update_status = cur.update({"username":username},
-     {"$set":{  "firstName":user.firstName,
-                "lastName":user.lastName,
-                "mobileNumber":user.mobileNumber,
-                "emailId":user.emailId 
+     {"$set":{  "firstName":updateUserModel.firstName,
+                "lastName":updateUserModel.lastName,
+                "mobileNumber":updateUserModel.mobileNumber,
+                "emailId":updateUserModel.emailId,
+                "lastModified": datetime.now() 
             }})
     if update_status:
         return {"message": update_status}

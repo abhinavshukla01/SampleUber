@@ -1,3 +1,5 @@
+from datetime import datetime
+from dependencies import addTimeStamp
 from models.response import RideOutput
 from models.base import RideHistory, RideInput, BaseUser, PasswordModel, BasePassword
 from models.user import BaseUser, UpdateUser, UserInput
@@ -25,13 +27,15 @@ def register(request:UserInput):
     if len(str(request.mobileNumber)) != 10:
         return {"message" : "Mobile number is invalid, it should contain 10 characters"}
     newUser = BaseUser(**request.dict())
-    insertId = col.insert_one(newUser.dict()).inserted_id
+    newUser = addTimeStamp(newUser.dict())
+    insertId = col.insert_one(newUser).inserted_id
     logger.debug(type(insertId))
     hashedPassword = pwd_context.hash(request.password)
     logger.debug("Password hashed and inserted in DB")
     newPassword = BasePassword(**{"userId":str(insertId),
                                 "password":hashedPassword})
-    passwordCol.insert_one(newPassword.dict())
+    newPassword=addTimeStamp(newPassword.dict())                                                        
+    passwordCol.insert_one(newPassword)
     return {"message": "User Created Successfully"}
    
 @router.post("/search-cab")
@@ -44,8 +48,9 @@ def searchCab(request: RideInput):
     rideRequest.distance=round(random.random()*10,2)
     rideRequest.fare=round(random.random()*100,2)
     rideRequest.status="RIDE_REQUESTED"
-    ride_id = rideHistoryCol.insert_one(rideRequest.dict()).inserted_id
-    ride={"rideId":str(ride_id), "userId":userId, "driverId":driverId}
+    rideRequest = addTimeStamp(rideRequest.dict())
+    ride_id = rideHistoryCol.insert_one(rideRequest).inserted_id
+    ride={"rideId":str(ride_id), "userId":userId, "driverId":driverId,"lastModified":datetime.now(),"createdAt":datetime.now()}
     rideCol.insert_one(ride)
     return {"message": "Success"}
 
