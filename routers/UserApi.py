@@ -54,7 +54,7 @@ def updateUser(username:str, user:UpdateUser):
 @router.post("/search-cab")
 def searchCab(request: RideInput):
     userId = str(col.find_one({"username":request.userId})["_id"])
-    driverId = "6136fe9bc7a31561eae58e16"
+    driverId = "612e14eaed63df53984e64e7"
     rideRequest=RideHistory(**request.dict())
     #rideRequest.userId=userId
     #rideRequest.driverId='d'
