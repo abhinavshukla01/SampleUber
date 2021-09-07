@@ -1,3 +1,4 @@
+import enum
 from models.response import RideOutput
 from models.base import RideHistory, RideInput, BaseUser, PasswordModel, BasePassword
 from models.user import BaseUser, UpdateUser, UserInput
@@ -34,23 +35,6 @@ def register(request:UserInput):
     passwordCol.insert_one(newPassword.dict())
     return {"message": "User Created Successfully"}
    
-           
-
-
-@router.patch("/update-user/{username}")
-def updateUser(username:str, user:UpdateUser):
-    dataInDB = col.find_one({"username":username})   
-    if len(str(user.mobileNumber)) != 10:
-        return {"message" : "Mobile number is invalid, it should contain 10 characters"}
-    update_status = col.update({"username":username},
-     {"$set":{  "firstName":user.firstName,
-                "lastName":user.lastName,
-                "mobileNumber":user.mobileNumber,
-                "emailId":user.emailId 
-            }})
-    if update_status:
-        return {"message": update_status}
-
 @router.post("/search-cab")
 def searchCab(request: RideInput):
     userId = str(col.find_one({"username":request.userId})["_id"])

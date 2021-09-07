@@ -1,12 +1,12 @@
 from models.base import RideHistory
 from typing import Optional
-from fastapi import status, Depends, HTTPException, APIRouter, BackgroundTasks
+from fastapi import status, Depends, HTTPException, APIRouter, BackgroundTasks, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.param_functions import Body
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from models.driver import DriverInput
-from models.base import BasePassword, BaseDriver, AcceptDecline
+from models.base import BasePassword, BaseDriver
 from utils.db import driverCol, passwordCol,rideCol,rideHistoryCol
 from dependencies import get_current_user,create_access_token,verify_password
 from datetime import datetime, timedelta
@@ -59,7 +59,7 @@ def rideRequests(username:str):
 
 
 @router.get("/accept-request")
-def acceptRequest(rideId: str,status : AcceptDecline):
+def acceptRequest(rideId: str,status : str = Query("...",enum=["ACCEPTED","DECLINED"])):
     if status == "ACCEPTED":
         totp = pyotp.TOTP('base32secret3232')
         otp = totp.now()
@@ -67,7 +67,7 @@ def acceptRequest(rideId: str,status : AcceptDecline):
     elif status == "DECLINED":
         up=rideHistoryCol.update({"_id":ObjectId(rideId)}, {"$set":{"status":"DRIVER_DECLINED"}})
     
-    pag.alert(text=status.value)
+    pag.alert(text=status)
     return {"message": "Updated"}
     #alert(text='', title='', button='OK')
     # otp_in = pag.prompt('Enter OTP')
@@ -84,7 +84,7 @@ def startRide(otp: int, rideId: str):
         return {"message": "Incorrect OTP"}
 
 @router.patch("/end-ride")
-def startRide(rideId: str):
+def endRide(rideId: str):
     req = rideHistoryCol.find_one({"_id":ObjectId(rideId)})
     up = rideHistoryCol.update({"_id":ObjectId(rideId)},{"$set":{"status":"COMPLETED","endTime":datetime.now()}})
     return up 

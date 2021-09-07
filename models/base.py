@@ -35,10 +35,6 @@ class RideStatus(str, Enum):
     DRIVER_DECLINED = "DRIVER_DECLINED"
     USER_DECLINED = "USER_DECLINED"
 
-class AcceptDecline(str,Enum):
-    ACCEPT = "ACCEPTED"
-    DECLINE = "DECLINED"
-
 class RideInput(BaseModel):
     userId: str
     sourceLocation: str

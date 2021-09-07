@@ -1,6 +1,7 @@
 from loguru import logger
 from models.base import UserType, PasswordModel,BaseUser
-from fastapi import FastAPI,status, Depends, HTTPException, APIRouter
+from models.user import UpdateUser
+from fastapi import FastAPI,status, Depends, HTTPException, APIRouter,Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dependencies import getPassword, get_current_user,create_access_token,verify_password
 from utils.db import col, passwordCol,driverCol
@@ -44,6 +45,24 @@ def changePassword(pwd:PasswordModel,username:str):
     up = passwordCol.update({"userId":str(dataInDB["_id"])}, {"$set":{"password":hashedPassword}})
     if up:
         return {"message": up}
+
+@router.patch("/update-user/{username}")
+def updateUser(username:str, user:UpdateUser, userType:str = Query("...",enum=["User","Driver"])):
+    if userType == "User":
+        cur = col
+    elif userType == "Driver":
+        cur = driverCol
+    dataInDB = cur.find_one({"username":username})   
+    if len(str(user.mobileNumber)) != 10:
+        return {"message" : "Mobile number is invalid, it should contain 10 characters"}
+    update_status = cur.update({"username":username},
+     {"$set":{  "firstName":user.firstName,
+                "lastName":user.lastName,
+                "mobileNumber":user.mobileNumber,
+                "emailId":user.emailId 
+            }})
+    if update_status:
+        return {"message": update_status}
 
 @router.get("/me")
 def getDetails(current_user: BaseUser = Depends(get_current_user)):
