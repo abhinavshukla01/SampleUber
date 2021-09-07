@@ -54,7 +54,7 @@ def updateUser(username:str, user:UpdateUser):
 @router.post("/search-cab")
 def searchCab(request: RideInput):
     userId = str(col.find_one({"username":request.userId})["_id"])
-    driverId = "d"
+    driverId = "6136fe9bc7a31561eae58e16"
     rideRequest=RideHistory(**request.dict())
     #rideRequest.userId=userId
     #rideRequest.driverId='d'
@@ -66,15 +66,29 @@ def searchCab(request: RideInput):
     rideCol.insert_one(ride)
     return {"message": "Success"}
 
+# @router.get("/ride-requests")
+# def rideRequests(username:str):
+#     userId = str(col.find_one({"username":username})["_id"])
+#     #driverId=""
+#     rideIds = rideCol.find({"userId":userId})
+#     op=[]
+#     for ride in rideIds:
+#         req = rideHistoryCol.find_one({"_id":ObjectId(ride["rideId"])})
+#         #logger.debug(req)
+#         req["_id"]=str(req["_id"])
+#         op.append(req)
+#     return op
+
 @router.get("/user-requests-status")
-def userRequestStatus(username:str):
+def userRequestStatus(rideId:str):
     #driverId = str(driverCol.find_one({"username":username})["_id"])
-    userId = str(col.find_one({"username":username})["_id"])
-    rideIds = rideCol.find({"userId":userId})
+    #userId = str(col.find_one({"username":username})["_id"])
+    #rideIds = rideCol.find({"userId":userId})
+    rideIds = rideCol.find({"rideId":rideId})
     op=[]
     for ride in rideIds:
         req = rideHistoryCol.find_one({"_id":ObjectId(ride["rideId"])})
-        if req["status"]=="ACCEPTED":
+        if req["status"]=="ACCEPTED" or req["status"]=="IN_PROGRESS":
             #driverId=ride["driverId"]
             driverDetails=driverCol.find_one({"_id":ObjectId(ride["driverId"])})
             #logger.debug(req)
@@ -82,11 +96,12 @@ def userRequestStatus(username:str):
             driverDetails["name"]=driverDetails["firstName"]+" "+driverDetails["lastName"]
             req.update(driverDetails)
             rideDetails = RideOutput(**req)
+            op.append(rideDetails)
         #rideDetails.name=req.update(driverDetails)
         elif req["status"]=="RIDE_REQUESTED" or req["status"]=="DRIVER_DECLINED":
             rideDetails=dict()
             rideDetails["sourceLocation"]=req["sourceLocation"]
             rideDetails["destinationLocation"]=req["destinationLocation"]
             rideDetails["status"]=req["status"]
-        op.append(rideDetails)
+            op.append(rideDetails)
     return op

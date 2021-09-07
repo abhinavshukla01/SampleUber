@@ -41,8 +41,8 @@ def register(request:DriverInput):
 
 @router.get("/ride-requests")
 def rideRequests(username:str):
-    #driverId = str(driverCol.find_one({"username":username})["_id"])
-    driverId="d"
+    driverId = str(driverCol.find_one({"username":username})["_id"])
+    #driverId=""
     rideIds = rideCol.find({"driverId":driverId})
     op=[]
     for ride in rideIds:
@@ -73,4 +73,14 @@ def acceptRequest(rideId: str,status : AcceptDecline):
     # otp_in = pag.prompt('Enter OTP')
     # return {"status": "Accepted","otp verified": otp==otp_in}
     # return {"status": "Declined by driver"}
+
+@router.patch("/start-ride")
+def startRide(otp: int, rideId: str):
+    req = rideHistoryCol.find_one({"_id":ObjectId(rideId)})
+    if otp == req["otp"]:
+        up = rideHistoryCol.update({"_id":ObjectId(rideId)},{"$set":{"status":"IN_PROGRESS","startTime":datetime.now()}})
+        return up 
+    else:
+        return {"message": "Incorrect OTP"}
+    
 
