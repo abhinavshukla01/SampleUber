@@ -1,19 +1,14 @@
-from models.base import RideHistory
-from typing import Optional,List
-from fastapi import status, Depends, HTTPException, APIRouter, BackgroundTasks, Query
-from fastapi.encoders import jsonable_encoder
-from fastapi.param_functions import Body
-from fastapi.security import OAuth2PasswordRequestForm
+from hashlib import new
+from typing import List
+from fastapi import APIRouter, Query
 from loguru import logger
 from models.driver import DriverInput
 from models.base import BasePassword, BaseDriver, RideHistoryOutput
 from utils.db import driverCol, passwordCol,rideCol,rideHistoryCol
-from dependencies import get_current_user,create_access_token,verify_password
-from datetime import datetime, timedelta
-from utils.security import ALGORITHM,ACCESS_TOKEN_EXPIRE_MINUTES,pwd_context
-from bson.json_util import dumps, CANONICAL_JSON_OPTIONS, loads
+from dependencies import addTimeStamp
+from datetime import datetime
+from utils.security import pwd_context
 from bson.objectid import ObjectId
-from fastapi.responses import JSONResponse
 import pyotp
 import pyautogui as pag
 
@@ -28,14 +23,17 @@ def register(request:DriverInput):
         return {"message" :"Password doesn't match!!"}
     if len(str(request.mobileNumber)) != 10:
         return {"message" : "Mobile number is invalid, it should contain 10 characters"}
+    
     newUser = BaseDriver(**request.dict())
-    insertId = driverCol.insert_one(newUser.dict()).inserted_id
+    newUser = addTimeStamp(newUser.dict())
+    insertId = driverCol.insert_one(newUser).inserted_id
     logger.debug(type(insertId))
     hashedPassword = pwd_context.hash(request.password)
     logger.debug("Password hashed and inserted in DB")
     newPassword = BasePassword(**{"userId":str(insertId),
                                 "password":hashedPassword})
-    passwordCol.insert_one(newPassword.dict())
+    newPassword=addTimeStamp(newPassword.dict())
+    passwordCol.insert_one(newPassword)
     return {"message": "User Created Successfully"}
 
 
